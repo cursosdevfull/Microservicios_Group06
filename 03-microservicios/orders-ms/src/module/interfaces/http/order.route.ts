@@ -7,7 +7,7 @@ import OrderController from "./order.controller";
 import { ORDER_INSERT } from "./order.schema";
 
 const infrastructure = new OrderInfrastructure();
-const infrastructureBroker = new BrokerInfrastructure();
+const infrastructureBroker = new BrokerInfrastructure(infrastructure);
 const application = new OrderApplication(infrastructure, infrastructureBroker);
 const controller = new OrderController(application);
 
@@ -20,7 +20,11 @@ class RouterOrder {
   }
 
   mountRoutes() {
-    this.router.post("/", ValidatorHelper.validate(ORDER_INSERT), controller.insert.bind(controller));
+    this.router.post(
+      "/",
+      ValidatorHelper.validate(ORDER_INSERT),
+      controller.insert.bind(controller)
+    );
   }
 }
 

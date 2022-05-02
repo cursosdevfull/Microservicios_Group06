@@ -5,13 +5,15 @@ export default class DatabaseBootstrap extends Bootstrap {
   initialize(): Promise<boolean | Error> {
     return new Promise((resolve, reject) => {
       const username = process.env.MONGO_USERNAME || "root";
-      const password = process.env.MONGO_PASSWORD || "root";
+      const password = process.env.MONGO_PASSWORD || "12345";
       const host = process.env.MONGO_HOST || "127.0.0.1";
       const port = process.env.MONGO_PORT || 27017;
       const database = process.env.MONGO_DATABASE || "order";
       const authSource = process.env.MONGO_AUTH_SOURCE || "admin";
 
-      const connectionString = `mongodb://${username}:${password}@${host}:${port}/${database}?authSource=${authSource}`;
+      const connectionString = `mongodb://${username}:${password}@${host}:${port}/${database}?authSource=${authSource}&retryWrites=true&w=majority`;
+
+      console.log("connectionString: ", connectionString);
 
       const options = {
         maxPoolSize: 10,

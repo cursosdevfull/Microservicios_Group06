@@ -24,4 +24,8 @@ export default class OrderApplication {
   async update(transaction: string, status: STATUS): Promise<string> {
     return this.repositoryOrder.update(transaction, status);
   }
+
+  async receiveMessage(): Promise<void> {
+    await this.repositoryBroker.receive();
+  }
 }

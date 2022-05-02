@@ -5,6 +5,14 @@ class OrderModel {
 
   constructor() {
     this.orderSchema = new mongoose.Schema({
+      userId: {
+        type: String,
+        required: true,
+      },
+      productId: {
+        type: String,
+        required: true,
+      },
       name: {
         type: String,
         required: true,

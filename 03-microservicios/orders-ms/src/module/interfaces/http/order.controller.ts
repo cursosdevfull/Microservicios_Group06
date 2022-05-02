@@ -6,9 +6,16 @@ export default class OrderController {
   constructor(private orderApplication: OrderApplication) {}
 
   async insert(req: Request, res: Response) {
-    const { name, itemCount, transaction } = req.body;
+    const { userId, productId, name, itemCount, transaction } = req.body;
 
-    const entity: OrderEntity = new OrderBuilder().addName(name).addItemCount(itemCount).addTransaction(transaction).addStatus("PENDING").build();
+    const entity: OrderEntity = new OrderBuilder()
+      .addUserId(userId)
+      .addProductId(productId)
+      .addName(name)
+      .addItemCount(itemCount)
+      .addTransaction(transaction)
+      .addStatus("PENDING")
+      .build();
 
     const orderInserted = await this.orderApplication.create(entity);
 

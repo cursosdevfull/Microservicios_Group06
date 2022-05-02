@@ -1,10 +1,22 @@
 export type STATUS = "PENDING" | "COMPLETED" | "CANCELLED";
 
 export class OrderBuilder {
+  userId: string;
+  productId: string;
   name: string;
   itemCount: number;
   transaction: string;
   status: STATUS;
+
+  addUserId(userId: string): OrderBuilder {
+    this.userId = userId;
+    return this;
+  }
+
+  addProductId(productId: string): OrderBuilder {
+    this.productId = productId;
+    return this;
+  }
 
   addName(name: string): OrderBuilder {
     this.name = name;
@@ -32,6 +44,8 @@ export class OrderBuilder {
 }
 
 export class OrderEntity {
+  userId: string;
+  productId: string;
   name: string;
   itemCount: number;
   transaction: string;
