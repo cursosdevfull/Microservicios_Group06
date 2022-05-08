@@ -11,7 +11,7 @@ export default class PaymentApplication {
     this.repositoryBroker = repositoryBroker;
   }
 
-  async create(payment: PaymentEntity): Promise<PaymentEntity> {
+  /*  async create(payment: PaymentEntity): Promise<PaymentEntity> {
     const result = await this.repositoryPayment.insert(payment);
     this.repositoryBroker.send({
       type: "BILLED_ORDER_EVENT",
@@ -19,7 +19,7 @@ export default class PaymentApplication {
     });
 
     return result;
-  }
+  } */
 
   async update(transaction: string, status: STATUS): Promise<string> {
     return this.repositoryPayment.update(transaction, status);

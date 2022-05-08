@@ -17,6 +17,19 @@ export default class BrokerInfrastructure implements RepositoryBroker {
     await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(message)));
   }
 
+  async sendError(message: any): Promise<void> {
+    const channel = BrokerBootstrap.getChannel();
+    const messageAsString = JSON.stringify(message);
+
+    const nameExchange = "FAILED_ERROR_EXCHANGE";
+    await channel.assertExchange(nameExchange, "topic", { durable: true });
+    channel.publish(
+      nameExchange,
+      "payment.order_cancelled.error",
+      Buffer.from(messageAsString)
+    );
+  }
+
   async receive(): Promise<void> {
     const channel = BrokerBootstrap.getChannel();
 
@@ -38,7 +51,7 @@ export default class BrokerInfrastructure implements RepositoryBroker {
       this.consumerFailedError.bind(this),
       "FAILED_ERROR_EXCHANGE",
       "topic",
-      "*.order_cancelled.error"
+      ["store.order_cancelled.error", "delivery.order_cancelled.error"]
     );
 
     await Promise.all([created, orderConfirmed, failedError]);
@@ -49,12 +62,18 @@ export default class BrokerInfrastructure implements RepositoryBroker {
     cb: (message: any) => void,
     exchangeName: string,
     kindExchange: string,
-    routingKey: string
+    routingKeys: string | string[]
   ) {
     await channel.assertExchange(exchangeName, kindExchange, { durable: true });
 
     const assertQueue = await channel.assertQueue("", { exclusive: true });
-    channel.bindQueue(assertQueue.queue, exchangeName, routingKey);
+    if (Array.isArray(routingKeys)) {
+      routingKeys.forEach((routingKey) => {
+        channel.bindQueue(assertQueue.queue, exchangeName, routingKey);
+      });
+    } else {
+      channel.bindQueue(assertQueue.queue, exchangeName, routingKeys);
+    }
 
     channel.consume(assertQueue.queue, (message: any) => cb(message), {
       noAck: false,
@@ -117,6 +136,7 @@ export default class BrokerInfrastructure implements RepositoryBroker {
 
     await this.paymentInfrastructure.insert(paymentEntity);
     await this.send(paymentEntity);
+    //this.sendError(paymentEntity);
 
     this.confirmMessageBroker(message);
   }

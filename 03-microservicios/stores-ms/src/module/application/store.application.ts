@@ -11,16 +11,6 @@ export default class StoreApplication {
     this.repositoryBroker = repositoryBroker;
   }
 
-  async create(store: StoreEntity): Promise<StoreEntity> {
-    const result = await this.repositoryStore.insert(store);
-    this.repositoryBroker.send({
-      type: "BILLED_ORDER_EVENT",
-      data: result,
-    });
-
-    return result;
-  }
-
   async update(transaction: string, status: STATUS): Promise<string> {
     return this.repositoryStore.update(transaction, status);
   }

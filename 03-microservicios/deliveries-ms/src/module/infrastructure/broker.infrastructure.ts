@@ -12,9 +12,29 @@ export default class BrokerInfrastructure implements RepositoryBroker {
 
   async send(message: any): Promise<void> {
     const channel = BrokerBootstrap.getChannel();
-    const queueName = "ORDER_DELIVERIED_EVENT";
+    const messageAsString = JSON.stringify(message);
+
+    console.log("Sending message...", messageAsString);
+    const nameExchange = "ORDER_CONFIRMED_EXCHANGE";
+    await channel.assertExchange(nameExchange, "fanout", { durable: true });
+    channel.publish(nameExchange, "", Buffer.from(messageAsString));
+    //ORDER_CONFIRMED_EXCHANGE
+    /*     const queueName = "ORDER_DELIVERIED_EVENT";
     await channel.assertQueue(queueName, { durable: true });
-    await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(message)));
+    await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(message))); */
+  }
+
+  async sendError(message: any): Promise<void> {
+    const channel = BrokerBootstrap.getChannel();
+    const messageAsString = JSON.stringify(message);
+
+    const nameExchange = "FAILED_ERROR_EXCHANGE";
+    await channel.assertExchange(nameExchange, "topic", { durable: true });
+    channel.publish(
+      nameExchange,
+      "delivery.order_cancelled.error",
+      Buffer.from(messageAsString)
+    );
   }
 
   async receive(): Promise<void> {
@@ -117,6 +137,7 @@ export default class BrokerInfrastructure implements RepositoryBroker {
 
     await this.deliveryInfrastructure.insert(deliveryEntity);
     await this.send(deliveryEntity);
+    //await this.sendError(deliveryEntity);
 
     this.confirmMessageBroker(message);
   }

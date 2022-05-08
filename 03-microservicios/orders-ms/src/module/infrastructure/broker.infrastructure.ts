@@ -63,6 +63,7 @@ export default class BrokerInfrastructure implements RepositoryBroker {
   }
 
   async consumerFailedError(message: any) {
+    console.log(message.content.toString());
     const content: Partial<OrderEntity> = JSON.parse(
       message.content.toString()
     );

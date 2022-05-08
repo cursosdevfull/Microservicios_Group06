@@ -7,7 +7,7 @@ export default class DatabaseBootstrap extends Bootstrap {
       const username = process.env.MONGO_USERNAME || "root";
       const password = process.env.MONGO_PASSWORD || "12345";
       const host = process.env.MONGO_HOST || "127.0.0.1";
-      const port = process.env.MONGO_PORT || 27018;
+      const port = process.env.MONGO_PORT || 27017;
       const database = process.env.MONGO_DATABASE || "payment";
       const authSource = process.env.MONGO_AUTH_SOURCE || "admin";
 

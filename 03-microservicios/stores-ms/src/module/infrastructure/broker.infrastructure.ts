@@ -14,6 +14,19 @@ export default class BrokerInfrastructure implements RepositoryBroker {
     await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(message)));
   }
 
+  async sendError(message: any): Promise<void> {
+    const channel = BrokerBootstrap.getChannel();
+    const messageAsString = JSON.stringify(message);
+
+    const nameExchange = "FAILED_ERROR_EXCHANGE";
+    await channel.assertExchange(nameExchange, "topic", { durable: true });
+    channel.publish(
+      nameExchange,
+      "store.order_cancelled.error",
+      Buffer.from(messageAsString)
+    );
+  }
+
   async receive(): Promise<void> {
     const channel = BrokerBootstrap.getChannel();
 
@@ -35,7 +48,7 @@ export default class BrokerInfrastructure implements RepositoryBroker {
       this.consumerFailedError.bind(this),
       "FAILED_ERROR_EXCHANGE",
       "topic",
-      "*.order_cancelled.error"
+      "delivery.order_cancelled.error"
     );
 
     await Promise.all([created, orderConfirmed, failedError]);
@@ -108,6 +121,7 @@ export default class BrokerInfrastructure implements RepositoryBroker {
 
     await this.storeInfrastructure.insert(storeEntity);
     await this.send(storeEntity);
+    //this.sendError(storeEntity);
 
     this.confirmMessageBroker(message);
   }

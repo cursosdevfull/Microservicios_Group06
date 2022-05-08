@@ -14,45 +14,6 @@ services:
     networks:
       - net-ms
 
-  mongo-payments-ms:
-    image: mongo:3.6
-    container_name: mongo-ms-payments
-    ports:
-      - "27018:27017"
-    volumes:
-      - mongo_payment_volume:/data/db
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=12345
-    networks:
-      - net-ms
-
-  mongo-stores-ms:
-    image: mongo:3.6
-    container_name: mongo-ms-stores
-    ports:
-      - "27019:27017"
-    volumes:
-      - mongo_store_volume:/data/db
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=12345
-    networks:
-      - net-ms
-
-  mongo-deliveries-ms:
-    image: mongo:3.6
-    container_name: mongo-ms-deliveries
-    ports:
-      - "27020:27017"
-    volumes:
-      - mongo_delivery_volume:/data/db
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=12345
-    networks:
-      - net-ms
-
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: rabbitmq-broker
@@ -61,21 +22,36 @@ services:
       - "15672:15672"
     healthcheck:
       test: rabbitmq-diagnostics -q ping
-      interval: 30s
+      interval: 20s
       timeout: 10s
       retries: 5
       start_period: 2s
     networks:
       - net-ms
 
+  gateway:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    image: img-gateway
+    container_name: gateway
+    ports:
+      - "9000:9000"
+    environment:
+      - PORT=9000
+      - PATH_MS_ORDER=http://orders-ms:8080
+    networks:
+      - net-ms
+    depends_on:
+      - mongo-orders-ms
+      - rabbitmq
+    restart: always
   orders-ms:
     build:
       context: .
       dockerfile: orders-ms/Dockerfile
     image: img-orders-ms
     container_name: orders-ms
-    ports:
-      - "8080:8080"
     environment:
       - PORT=8080
       - MONGO_USERNAME=root
@@ -104,7 +80,7 @@ services:
       - PORT=8081
       - MONGO_USERNAME=root
       - MONGO_PASSWORD=12345
-      - MONGO_HOST=mongo-payments-ms
+      - MONGO_HOST=mongo-orders-ms
       - MONGO_PORT=27017
       - MONGO_DATABASE=payment
       - MONGO_AUTH_SOURCE=admin
@@ -112,7 +88,7 @@ services:
     networks:
       - net-ms
     depends_on:
-      - mongo-payments-ms
+      - mongo-orders-ms
       - rabbitmq
     restart: always
 
@@ -128,7 +104,7 @@ services:
       - PORT=8082
       - MONGO_USERNAME=root
       - MONGO_PASSWORD=12345
-      - MONGO_HOST=mongo-stores-ms
+      - MONGO_HOST=mongo-orders-ms
       - MONGO_PORT=27017
       - MONGO_DATABASE=store
       - MONGO_AUTH_SOURCE=admin
@@ -136,7 +112,7 @@ services:
     networks:
       - net-ms
     depends_on:
-      - mongo-stores-ms
+      - mongo-orders-ms
       - rabbitmq
     restart: always
 
@@ -152,7 +128,7 @@ services:
       - PORT=8083
       - MONGO_USERNAME=root
       - MONGO_PASSWORD=12345
-      - MONGO_HOST=mongo-deliveries-ms
+      - MONGO_HOST=mongo-orders-ms
       - MONGO_PORT=27017
       - MONGO_DATABASE=delivery
       - MONGO_AUTH_SOURCE=admin
@@ -160,15 +136,12 @@ services:
     networks:
       - net-ms
     depends_on:
-      - mongo-deliveries-ms
+      - mongo-orders-ms
       - rabbitmq
     restart: always
 
 volumes:
   mongo_order_volume:
-  mongo_payment_volume:
-  mongo_store_volume:
-  mongo_delivery_volume:
 
 networks:
   net-ms:
