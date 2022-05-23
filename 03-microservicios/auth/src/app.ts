@@ -11,6 +11,7 @@ class App {
 
   middlewares() {
     this.expressApp.use(express.json());
+    this.expressApp.use(express.urlencoded({ extended: false }));
   }
 
   mountRoutes() {

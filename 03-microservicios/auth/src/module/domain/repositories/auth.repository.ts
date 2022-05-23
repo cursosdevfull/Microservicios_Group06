@@ -1,4 +1,4 @@
-import { AuthEntity, STATUS } from "../entities/auth.entity";
+import { AuthEntity } from "../entities/auth.entity";
 
 export interface Tokens {
   accessToken: string;
@@ -6,7 +6,7 @@ export interface Tokens {
 }
 
 export default interface Repository {
-  register(auth: AuthEntity): Promise<void>;
-  login(email: string, password: string): Promise<Tokens>;
-  getNewAccessToken(refreshToken: string): Promise<Tokens>;
+  getOne(where: object): Promise<AuthEntity>;
+  insert(auth: AuthEntity): Promise<void>;
+  update(refreshToken: string, newRefreshToken: string): Promise<void>;
 }

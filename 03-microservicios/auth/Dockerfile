@@ -1,6 +1,6 @@
 FROM node:16.1-alpine3.13
 
-ARG BASE_DIR="orders-ms"
+ARG BASE_DIR="auth"
 
 WORKDIR /app
 

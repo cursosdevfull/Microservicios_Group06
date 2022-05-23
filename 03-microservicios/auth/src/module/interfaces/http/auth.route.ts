@@ -1,15 +1,12 @@
 import express, { Request, Response } from "express";
-import OrderApplication from "../../application/auth.application";
+import AuthApplication from "../../application/auth.application";
 import ValidatorHelper from "../../helpers/validator.helper";
-import BrokerInfrastructure from "../../infrastructure/broker.infrastructure";
-import OrderInfrastructure from "../../infrastructure/order.infrastructure";
-import OrderController from "./order.controller";
-import { ORDER_INSERT } from "./order.schema";
+import AuthInfrastructure from "../../infrastructure/auth.infrastructure";
+import AuthController from "./auth.controller";
 
-const infrastructure = new OrderInfrastructure();
-const infrastructureBroker = new BrokerInfrastructure(infrastructure);
-const application = new OrderApplication(infrastructure, infrastructureBroker);
-const controller = new OrderController(application);
+const infrastructure = new AuthInfrastructure();
+const application = new AuthApplication(infrastructure);
+const controller = new AuthController(application);
 
 class RouterOrder {
   router: express.Router;
@@ -20,11 +17,13 @@ class RouterOrder {
   }
 
   mountRoutes() {
-    this.router.post(
-      "/",
-      ValidatorHelper.validate(ORDER_INSERT),
-      controller.insert.bind(controller)
-    );
+    this.router.post("/register", controller.register);
+
+    this.router.post("/login", controller.login);
+
+    this.router.post("/get-new-access-token", controller.getNewAccessToken);
+
+    this.router.post("/validate-access-token", controller.validateAccessToken);
   }
 }
 

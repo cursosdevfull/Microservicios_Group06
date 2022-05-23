@@ -5,7 +5,7 @@ import App from "../app";
 export default class ServerBootstrap extends Bootstrap {
   initialize(): Promise<boolean | Error> {
     return new Promise((resolve, reject) => {
-      const PORT = process.env.PORT || 19000;
+      const PORT = process.env.PORT || 21000;
 
       const server = http.createServer(App);
 

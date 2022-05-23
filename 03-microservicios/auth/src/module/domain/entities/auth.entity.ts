@@ -1,6 +1,5 @@
-export type STATUS = "PENDING" | "COMPLETED" | "CANCELLED";
-
 export class AuthBuilder {
+  _id: string;
   email: string;
   password: string;
   name: string;
@@ -32,6 +31,7 @@ export class AuthBuilder {
 }
 
 export class AuthEntity {
+  _id: string;
   email: string;
   password: string;
   name: string;

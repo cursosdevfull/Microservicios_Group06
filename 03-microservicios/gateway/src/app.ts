@@ -1,11 +1,13 @@
 import express, { Application, Request, Response } from "express";
 import { EnvironmentsHelper } from "./helpers/environments.helper";
 import axios from "axios";
+import jwt_decode from "jwt-decode";
 
 interface Route {
   origin: string;
   target: string;
   method: any;
+  middlewares: any[];
 }
 
 type Routes = Route[];
@@ -18,6 +20,25 @@ class App {
       origin: "/api/order",
       target: `${EnvironmentsHelper.pathMSOrder}/order`,
       method: "post",
+      middlewares: [this.authentication],
+    },
+    {
+      origin: "/api/auth/register",
+      target: `${EnvironmentsHelper.pathMSAuth}/auth/register`,
+      method: "post",
+      middlewares: [],
+    },
+    {
+      origin: "/api/auth/login",
+      target: `${EnvironmentsHelper.pathMSAuth}/auth/login`,
+      method: "post",
+      middlewares: [],
+    },
+    {
+      origin: "/api/auth/get-new-access-token",
+      target: `${EnvironmentsHelper.pathMSAuth}/auth/get-new-access-token`,
+      method: "post",
+      middlewares: [],
     },
   ];
 
@@ -30,6 +51,7 @@ class App {
 
   middlewares() {
     this.expressApp.use(express.json());
+    this.expressApp.use(express.urlencoded({ extended: false }));
   }
 
   mountRoutes() {
@@ -37,30 +59,24 @@ class App {
       let myRouteFun;
       switch (route.method.toLowerCase()) {
         case "get":
-          this.expressApp.get(route.origin, this.functionCustom(route));
+          this.expressApp.get(
+            route.origin,
+            ...route.middlewares,
+            this.functionCustom(route)
+          );
           break;
         case "post":
           myRouteFun = this.expressApp.post(
             route.origin,
+            ...route.middlewares,
             this.functionCustom(route)
           );
           break;
         case "put":
           myRouteFun = this.expressApp.put(
             route.origin,
+            ...route.middlewares,
             this.functionCustom(route)
-          );
-          break;
-        case "delete":
-          myRouteFun = this.expressApp.delete(
-            route.origin,
-            (route: Route) => {
-              return (req: Request, res: Response) => {
-                console.log(route.target)
-                res.send("Delete");
-              }
-            }()
-            //this.functionCustom(route)
           );
           break;
       }
@@ -91,6 +107,9 @@ class App {
           Object.keys(req.body).length > 0
         ) {
           rqAxios.data = req.body;
+          if (res.locals.userId) {
+            rqAxios.data.userId = res.locals.userId;
+          }
         }
 
         const result = await axios(rqAxios);
@@ -116,6 +135,46 @@ class App {
     }
 
     return params;
+  }
+
+  async authentication(req: Request, res: Response, next: any) {
+    const authorization = req.headers["authorization"];
+
+    if (!authorization) {
+      return res.status(401).json({
+        message: "Access token is missing",
+      });
+    }
+
+    const elementsHeaderAuthorization = authorization.split(" ");
+
+    if (elementsHeaderAuthorization.length !== 2) {
+      return res.status(401).json({
+        message: "Access token is missing",
+      });
+    }
+
+    const [_, accessToken] = elementsHeaderAuthorization;
+
+    const rqAxios: any = {
+      method: "post",
+      url: `${EnvironmentsHelper.pathMSAuth}/auth/validate-access-token`,
+      responseType: "json",
+      data: { accessToken },
+    };
+    const result = await axios(rqAxios);
+    const response = result.data;
+
+    if (!response.isValid) {
+      return res.status(401).json({
+        message: "Access token is missing",
+      });
+    }
+
+    const payload: any = jwt_decode(accessToken);
+    res.locals.userId = payload.id;
+
+    return next();
   }
 }
 
