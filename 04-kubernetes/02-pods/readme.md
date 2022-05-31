@@ -17,3 +17,15 @@ kubectl delete -f <nombre manifiesto>
 kubectl exec -it <nombre pod> -- sh
 kubectl exec -it <nombre pod> -c <nombre contenedor> -- sh
 ```
+
+### Para listar pods con sus etiquetas
+
+```
+kubectl get po --show-labels
+```
+
+### Para listar pods con determinada etiqueta y valor
+
+```
+kubectl get po --show-labels -l env=dev
+```
