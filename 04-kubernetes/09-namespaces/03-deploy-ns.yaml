@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ns-qas
+  labels:
+    env: dev
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ns-prd
+  labels:
+    env: dev
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-qas
+  namespace: ns-qas
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend-qas
+  template:
+    metadata:
+      labels:
+        app: backend-qas
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:alpine
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-prd
+  namespace: ns-prd
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend-prd
+  template:
+    metadata:
+      labels:
+        app: backend-prd
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:alpine
