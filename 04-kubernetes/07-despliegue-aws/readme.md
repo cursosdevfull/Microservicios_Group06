@@ -17,19 +17,19 @@ aws configure
 ### Crear Cluster EKS
 
 ```
-eksctl create cluster --name cluster-ms06 --without-nodegroup --region us-east-1 --zones us-east-1a,us-east-1b
+eksctl create cluster --name clusterms06 --without-nodegroup --region us-east-1 --zones us-east-1a,us-east-1b
 ```
 
 ### Agregar nodos al cluster
 
 ```
-eksctl create nodegroup --cluster cluster-ms06 --name cluster-ms06-nodegroup --node-type t3.medium --nodes 1 --nodes-min 1 --nodes-max 3 --asg-access
+eksctl create nodegroup --cluster clusterms06 --name clusterms06-nodegroup --node-type t3.medium --nodes 1 --nodes-min 1 --nodes-max 3 --asg-access
 ```
 
 ### Crear IAM Provider
 
 ```
-eksctl utils associate-iam-oidc-provider --cluster cluster-ms06 --approve
+eksctl utils associate-iam-oidc-provider --cluster clusterms06 --approve
 ```
 
 ### Descargar política para el cluster
@@ -47,7 +47,7 @@ aws iam create-policy --policy-name AWSLoadBalancerPolicyMS06 --policy-document 
 ### Crear cuenta ServiceAccount para el cluster
 
 ```
-eksctl create iamserviceaccount --cluster cluster-ms06 --namespace=kube-system --name=aws-lb-ms-06 --attach-policy-arn=arn:aws:iam::282865065290:policy/AWSLoadBalancerPolicyMS06 --override-existing-serviceaccounts --approve
+eksctl create iamserviceaccount --cluster clusterms06 --namespace=kube-system --name=aws-lb-ms-06 --attach-policy-arn=arn:aws:iam::282865065290:policy/AWSLoadBalancerPolicyMS06 --override-existing-serviceaccounts --approve
 ```
 
 ### Verificar si existe el ingress controller del balanceador
@@ -71,7 +71,7 @@ helm repo update
 ### Instalar el ingress controller del balanceador
 
 ```
-helm upgrade -i aws-load-balancer-controller eks/aws-load-balancer-controller --set clusterName=cluster-ms06 --set serviceAccount.create=false --set serviceAccount.name=aws-lb-ms-06 -n kube-system
+helm upgrade -i aws-load-balancer-controller eks/aws-load-balancer-controller --set clusterName=clusterms06 --set serviceAccount.create=false --set serviceAccount.name=aws-lb-ms-06 -n kube-system
 ```
 
 ### Verificar que se haya instalado el ingress controller

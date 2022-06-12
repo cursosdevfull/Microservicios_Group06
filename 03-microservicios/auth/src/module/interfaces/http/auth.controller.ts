@@ -13,7 +13,7 @@ export default class AuthController {
     const auth = req.body;
     console.log("controller", auth);
     await this.application.register(auth);
-    res.sendStatus(200);
+    res.send("That's all folks!");
   }
 
   async login(req: Request, res: Response) {

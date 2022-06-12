@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deliveries-ms-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: deliveries-ms-app
+  template:
+    metadata:
+      labels:
+        app: deliveries-ms-app
+    spec:
+      containers:
+        - name: container
+          image: 282865065290.dkr.ecr.us-east-1.amazonaws.com/img-deliveries-ms
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8083
+          env:
+            - name: PORT
+              value: "8083"
+            - name: MONGO_USERNAME
+              value: root
+            - name: MONGO_PASSWORD
+              value: "12345"
+            - name: MONGO_HOST
+              value: mongo-ms
+            - name: MONGO_PORT
+              value: "27017"
+            - name: MONGO_DATABASE
+              value: delivery
+            - name: MONGO_AUTH_SOURCE
+              value: admin
+            - name: RABBITMQ_HOST
+              value: rabbitmq:5672
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deliveries-ms-app
+spec:
+  type: ClusterIP
+  selector:
+    app: deliveries-ms-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8083

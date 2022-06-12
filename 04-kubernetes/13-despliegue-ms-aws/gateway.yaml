@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gateway-app
+  template:
+    metadata:
+      labels:
+        app: gateway-app
+    spec:
+      containers:
+        - name: container
+          image: 282865065290.dkr.ecr.us-east-1.amazonaws.com/img-gateway
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9000
+          env:
+            - name: PORT
+              value: "9000"
+            - name: PATH_MS_ORDER
+              value: http://orders-ms-app
+            - name: PATH_MS_AUTH
+              value: http://auths-ms-app
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway-app
+spec:
+  type: ClusterIP
+  selector:
+    app: gateway-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9000
